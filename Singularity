@@ -6,6 +6,7 @@ Stage: build
     apt update && apt install -y wget curl
     wget https://raw.githubusercontent.com/bioconda/bioconda-common/master/install-and-set-up-conda.sh
     BIOCONDA_DISABLE_BUILD_PREP=1 bash install-and-set-up-conda.sh
+    export PATH=/opt/mambaforge/bin:$PATH
     eval "$(conda shell.bash hook)"
     mamba install samtools
 
