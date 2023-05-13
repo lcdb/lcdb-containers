@@ -1,11 +1,8 @@
 name: Singularity Build (native)
-on: 
+on:
   push:
-
-    # Edit the branches here if you want to change deploy behavior
     branches:
       - main
-      - master
 
   # Do the builds on all pull requests (to test them)
   pull_request: []
@@ -18,10 +15,10 @@ jobs:
       changed_file: ${{ steps.files.outputs.added_modified }}
     steps:
       - id: files
-        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42
+        uses: jitterbit/get-changed-files@v1
         with:
           format: 'json'
-  
+
   build-test-containers:
     needs:
       - changes
@@ -39,7 +36,7 @@ jobs:
           # Continue if we have a changed Singularity recipe
           if [[ "${{ matrix.changed_file }}" = *Singularity* ]]; then
             echo "keepgoing=true" >> $GITHUB_ENV
-          fi          
+          fi
 
       - name: Set up Go 1.13
         if: ${{ env.keepgoing == 'true' }}
@@ -65,7 +62,7 @@ jobs:
         env:
           SINGULARITY_VERSION: 3.8.1
           GOPATH: /tmp/go
-      
+
         run: |
           mkdir -p $GOPATH
           sudo mkdir -p /usr/local/var/singularity/mnt && \
@@ -76,7 +73,7 @@ jobs:
           cd singularity-ce-${SINGULARITY_VERSION} && \
           ./mconfig -p /usr/local && \
           make -C builddir && \
-          sudo make -C builddir install          
+          sudo make -C builddir install
 
       - name: Check out code for the container build
         if: ${{ env.keepgoing == 'true' }}
@@ -87,7 +84,7 @@ jobs:
         env:
           recipe: ${{ matrix.changed_file }}
         run: |
-         ls 
+         ls
          if [ -f "${{ matrix.changed_file }}" ]; then
             sudo -E singularity build container.sif ${{ matrix.changed_file }}
             tag=$(echo "${recipe/Singularity\./}")
@@ -107,7 +104,7 @@ jobs:
         if: (github.event_name != 'pull_request')
         env:
           keepgoing: ${{ env.keepgoing }}
-        run: |         
+        run: |
             if [[ "${keepgoing}" == "true" ]]; then
                 echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login -u ${{ secrets.GHCR_USERNAME }} --password-stdin oras://ghcr.io
                 singularity push container.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${tag}
