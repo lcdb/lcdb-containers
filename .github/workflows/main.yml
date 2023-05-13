@@ -51,9 +51,9 @@ jobs:
 
       - name: Build Container
         run: |
-        sudo -E singularity build container.sif Singularity
-        tag="ex"
-        echo "tag=$tag" >> $GITHUB_ENV
+          sudo -E singularity build container.sif Singularity
+          tag="ex"
+          echo "tag=$tag" >> $GITHUB_ENV
 
       - name: Login and Deploy Container
         run: |
